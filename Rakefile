@@ -16,8 +16,8 @@ end
 desc 'Generate documentation for the acts_as_git_versioned plugin.'
 Rake::RDocTask.new(:rdoc) do |rdoc|
   rdoc.rdoc_dir = 'rdoc'
-  rdoc.title    = 'ActsAsGitVersioned'
+  rdoc.title    = 'acts_as_git_versioned'
   rdoc.options << '--line-numbers' << '--inline-source'
-  rdoc.rdoc_files.include('README')
+  rdoc.rdoc_files.include('README.md')
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
