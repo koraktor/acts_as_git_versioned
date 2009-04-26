@@ -80,6 +80,52 @@ module ActiveRecord
           self.repository.commit_all commit_message
         end
 
+        # Reverts the contents of the working tree to the given commit using the
+        # repository's #checkout method
+        #
+        # * +objects+ An array of objects extended by acts_as_git_versioned
+        # * +commit+ The commit to revert to (default: nil, this is the parent
+        #   commit of +HEAD+)
+        def revert(objects = [], commit = nil)
+          unless (commit.nil? or commit.is_a? Grit::Commit) and objects.is_a? Array
+            raise ArgumentError
+          end
+
+          if objects.empty?
+            files = ['.']
+          else
+            objects.reject { |o| o.class.included_modules.include? self }
+            files = objects.collect { |o| o.blob_path }
+          end
+          
+          if commit.nil?
+            revert_sha = self.repository.commits.first.parents.first.sha
+          else commit.is_a? Grit::Commit
+            revert_sha = commit.sha
+          end
+
+          self.repository.checkout revert_sha, files
+
+          unless objects.empty?
+            objects.each do |o|
+              p o
+              o = YAML.load_file(o.blob_path)
+              p o
+            end
+          end
+        end
+
+        # Reverts the contents of the working tree using #revert and commits
+        # the changes using #commit
+        #
+        # * +objects+ An array of objects extended by acts_as_git_versioned
+        # * +commit+ The commit to revert to (default: nil, this is the parent
+        #   commit of +HEAD+)
+        def revert!(objects = [], commit = nil)
+          revert(objects, commit)
+          commit(nil, "Reverted commit #{self.repository.commits.first.sha}")
+        end
+
       end
 
       module InstanceMethods
@@ -109,14 +155,12 @@ module ActiveRecord
         # Custom version of Object#to_yaml to only capture the +attributes+
         # instance variable of ActiveRecord::Base
         def to_yaml_git(opts = {})
-         YAML::quick_emit(self, opts) do |out|
+          YAML::quick_emit(self, opts) do |out|
             out.map(taguri, to_yaml_style) do |map|
               map.add("attributes", @attributes)
             end
           end
         end
-
-        protected
 
         # Returns the path of the blob. If +relative+ is +true+ it returns the
         # relative path (as inside the repository), otherwise the abosulte path
@@ -128,6 +172,12 @@ module ActiveRecord
           else
             File.join(repository_path, blob_path)
           end
+        end
+
+        # Reverts the data of this object to the state in the parent commit of
+        # HEAD
+        def revert
+          self.class.revert [self]
         end
 
       end
