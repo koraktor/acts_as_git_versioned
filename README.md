@@ -1,13 +1,14 @@
-`acts_as_git_versioned`
-=====================
+acts\_as\_git\_versioned
+========================
 
-`acts_as_git_versioned` is a proof-of-concept Rails plugin implementing versioning
-of ActiveRecords using Git.
+acts\_as\_git\_versioned is a proof-of-concept Rails plugin implementing
+versioning of ActiveRecords using Git.
 
 Features:
 
 * Saving of ActiveRecord model instances as YAML files into a Git repository
 * Committing changes to the Git repository
+* Reverting changes on the data (only the working tree files at the moment)
 
 ## Requirements
 
@@ -17,7 +18,7 @@ Features:
 
 ## Example
 
-The following example will show the basic usage of `acts_as_git_versioned`.
+The following example will show the basic usage of acts\_as\_git\_versioned.
 
     class MyModel < ActiveRecord::Base
       acts_as_git_versioned({:repository => 'MyGit.git'})
@@ -36,7 +37,7 @@ The following example will show the basic usage of `acts_as_git_versioned`.
     MyModel.first.update_attribute(:name => "First MyModel instance")
     MyModel.commit
 
-After that you will have to commits in your Git repository `MyGit.git` with the
+After that you will have two commits in your Git repository `MyGit.git` with the
 diff between commit #1 and commit #2 being the corrected typo in the first
 `MyModel` instance.
 
